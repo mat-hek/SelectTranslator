@@ -1,6 +1,6 @@
 # SelectTranslator v0.2
 
-Translates text selected with mouse when hotkey is pressed. Translation engine is https://translate.yandex.com/ 
+Translates text selected with mouse when hotkey is pressed. Translation engine is [Yandex](https://translate.yandex.com/)
 
 Needs Application.conf:
 

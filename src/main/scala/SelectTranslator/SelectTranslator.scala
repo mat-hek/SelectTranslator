@@ -9,5 +9,4 @@ object SelectTranslator extends App {
     val stg = SelectedTextGetter()
     TranslationCtrl(hc,stg)
     GUIManager
-
 }

@@ -25,8 +25,8 @@ class SelectedTextGetter extends ClipboardOwner {
                 try {
                     val text = getClipboardText
                     setClipboardData(before)
-                    promise = None
                     p success text.trim
+                    promise = None
                 }
                 catch {
                     case e @ (_:IllegalStateException | _:java.awt.datatransfer.UnsupportedFlavorException) => p failure GetSelectedTextException
@@ -80,8 +80,8 @@ class SelectedTextGetter extends ClipboardOwner {
         finally {
             Future {
                 Thread sleep 100
-                p failure GetSelectedTextException
                 promise = None
+                p failure GetSelectedTextException
             }
         }
         p.future

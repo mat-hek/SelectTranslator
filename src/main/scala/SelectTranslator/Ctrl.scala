@@ -7,7 +7,7 @@ import scala.concurrent.duration._
 /**
   * Created by MatHek on 21.04.2016.
   */
-trait Ctrl {}
+trait Ctrl
 
 object TranslationCtrl extends Ctrl{
     def apply(hk:HotkeyManager, stg:SelectedTextGetter) {

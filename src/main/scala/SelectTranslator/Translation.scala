@@ -39,17 +39,19 @@ case class Translation(lang: String) extends Preference{
             "lang" -> lang
         ) > as.String)
 
-        d onComplete {
-            case Success(result) =>
-                translation complete {
-                    try
-                        Success((JParser parseFromString result).get get "text" get 0 asString)
-                    catch {
-                        case e: WrongValueException => Failure(TranslationException)
+        Future {
+            d onComplete {
+                case Success(result) =>
+                    translation complete {
+                        try
+                            Success((JParser parseFromString result).get get "text" get 0 asString)
+                        catch {
+                            case e: WrongValueException => Failure(TranslationException)
+                        }
                     }
-                }
-            case Failure(e) =>
-                e.printStackTrace()
+                case Failure(e) =>
+                    e.printStackTrace()
+            }
         }
         translation.future
     }

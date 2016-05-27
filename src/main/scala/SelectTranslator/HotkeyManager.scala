@@ -1,4 +1,4 @@
-package SelectTranslator
+package selectTranslator
 
 import javax.swing.KeyStroke
 

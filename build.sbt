@@ -1,4 +1,6 @@
-name := "SelectTranslator"
+import AssemblyKeys._
+
+name := "selectTranslator"
 
 version := "0.2"
 
@@ -18,4 +20,14 @@ libraryDependencies += "com.github.tulskiy" % "jkeymaster" % "1.2"
 
 libraryDependencies += "com.typesafe" % "config" % "1.3.0"
 
-mainClass in Compile := Some("SelectTranslator.Class")
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4.4"
+
+mainClass in Compile := Some("SelectTranslator.SelectTranslator")
+mainClass in assembly := Some("SelectTranslator.SelectTranslator")
+/*
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => old match {
+  case x if x endsWith ".conf" => MergeStrategy.concat
+  case x => old(x)
+   }
+}
+*/

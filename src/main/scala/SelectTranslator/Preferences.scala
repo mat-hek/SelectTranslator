@@ -1,13 +1,15 @@
-package SelectTranslator
+package selectTranslator
 
 import javax.swing.KeyStroke
+
+import akka.actor._
 
 /**
   * Created by MatHek on 07.04.2016.
   */
 trait Preference
 case class TranslationPreference(shortcut: Hotkey.Keys, t: Translation) extends Preference {
-    def toHotkey(stg:SelectedTextGetter) = Hotkey(shortcut, () => t.translate(stg))
+    def toHotkey(translationManager:ActorRef) = Hotkey(shortcut, () => t.sendTo(translationManager))
 }
 
 object Preferences {

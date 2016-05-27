@@ -1,4 +1,4 @@
-package Utils
+package utils
 
 import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._

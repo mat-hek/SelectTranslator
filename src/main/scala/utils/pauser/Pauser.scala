@@ -20,6 +20,7 @@ object PauserTest extends App {
     println("abc")
     2.seconds ~~= println("def")
     3.seconds ~~= println("ghi")
+    pauser cancelAll()
 }
 
 object Pause {
@@ -35,13 +36,18 @@ class Pauser(actorSystem: ActorSystem){
     private val pauserActor = actorSystem.actorOf(Props(new PauserActor))
 
 
-    def pause(time:FiniteDuration): WaitTo_obj ={
+    def pause(time:FiniteDuration): WaitTo_obj = {
         pauserActor ! Wait(time)
         WaitTo
     }
 
     def schedule(callback : => Any):Pauser = {
         pauserActor ! Do(() => callback)
+        this
+    }
+
+    def cancelAll():Pauser = {
+        pauserActor ! Cancel
         this
     }
 
@@ -65,29 +71,47 @@ private object PauserActor {
     sealed trait Action
     case class Wait(time:FiniteDuration) extends Action
     case class Do(callback: () => Any) extends Action
-    case object WaitingFinished
+    case object Cancel
+    private case object WaitingFinished
 }
 
 private class PauserActor extends Actor {
     import PauserActor._
 
     val requests = Queue[Action]()
+    var scheduled:Option[Cancellable] = None
 
     def receive = ready
     def ready:Receive = {
         case Wait(time) =>
-            context.system.scheduler.scheduleOnce(time, self, WaitingFinished)
+            scheduled = Some(context.system.scheduler.scheduleOnce(time, self, WaitingFinished))
             context become waiting
         case Do(callback) =>
             callback()
             self ! WaitingFinished
             context become waiting
+        case c => common(c)
     }
+
     def waiting:Receive = {
-        case m:Action => requests enqueue m
+        case m: Action =>
+            requests enqueue m
         case WaitingFinished =>
-            if(requests nonEmpty)
-                self ! requests.dequeue
-            context become ready
+            if (requests nonEmpty)
+                ready(requests dequeue)
+            else
+                context become ready
+        case c => common(c)
+    }
+
+    def common:Receive = {
+        case Cancel => scheduled match {
+            case Some(c) =>
+                c cancel()
+                scheduled = None
+                requests clear()
+                context become ready
+            case None =>
+        }
     }
 }

@@ -2,7 +2,6 @@ package selectTranslator.GUI
 
 import akka.actor._
 import selectTranslator._
-import utils.Timeout
 
 import scala.concurrent.duration._
 
@@ -35,18 +34,22 @@ class GUIManager extends Actor{
     import GUIContents.PopupWindow._
     PopupWindow
 
-    val hideTimeout = Timeout()
+    import utils.pauser._
+
+    private implicit val pauser = Pauser()
 
     def receive = {
-        case MUpdateInput(text) => textContainer write text
+        case MUpdateInput(text) =>
+            textContainer write text
+            resultContainer write ""
         case MUpdateResult(text) => resultContainer write text
         case MShow =>
-            hideTimeout cancel()
+            pauser cancelAll()
             frame setFocusableWindowState false
             frame setVisible true
             frame setFocusableWindowState true
         case MHide => frame setVisible false
-        case MHide(time) => hideTimeout wait time andThen self ! MHide
+        case MHide(time) => time ~~= self ! MHide
 
     }
 }

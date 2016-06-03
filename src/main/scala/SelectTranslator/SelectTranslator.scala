@@ -1,15 +1,12 @@
-package SelectTranslator
+package selectTranslator
 
-import scala.util.{Success, Failure}
+import selectTranslator.GUI.GUIManager
 
 
 /**
   * Created by MatHek on 06.04.2016.
   */
 object SelectTranslator extends App {
-
-    val hc = HotkeyManager()
-    val stg = SelectedTextGetter()
-    TranslationCtrl(hc,stg)
+    TranslationEnvInitializer()
     GUIManager
 }

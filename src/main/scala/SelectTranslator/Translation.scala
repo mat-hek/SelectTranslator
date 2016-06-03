@@ -1,5 +1,6 @@
-package SelectTranslator
+package selectTranslator
 
+import akka.actor._
 import dispatch._
 import dispatch.Defaults.executor
 import jawn.ast.{JParser, WrongValueException}
@@ -13,36 +14,43 @@ import scala.concurrent.{Future, Promise}
 
 case object TranslationException extends Exception
 
-case class Translation(lang: String) extends Preference{
+object Translation {
+    val downloader = TranslationDownloader
+    def apply(lang:String) = new Translation(lang)(downloader)
+}
 
+case class Translation(lang: String)(td: ITranslationDownloader) extends Preference {
 
-    def translate(stg:SelectedTextGetter) {
-        TranslationCtrl hotkeyTranslationStarted()
-        val f = stg getSelectedText()
-        f onSuccess { case input => translate(input) }
-        f onComplete GetSelectedTextCtrl.textRecognized
+    def sendTo(translationManager:ActorRef) {
+        translationManager ! this
     }
 
     def translate(input:String) {
-        getTranslation(input) onComplete TranslationCtrl.translationFinished
+        td.downloadTranslation(this, input) onComplete Ctrl.TranslationCtrl.translationFinished
     }
+}
 
+trait ITranslationDownloader{
+    def downloadTranslation(translation: Translation, text:String):Future[String]
+}
+object TranslationDownloader extends ITranslationDownloader {
 
+    Http()
 
-    private def getTranslation(text:String):Future[String] = {
-        val translation = Promise[String]
+    def downloadTranslation(translation:Translation, text:String) = {
+        val translated = Promise[String]
 
         import com.typesafe.config.ConfigFactory
         val d = Http(url("https://translate.yandex.net/api/v1.5/tr.json/translate").POST << Map(
             "key" -> ConfigFactory.load.getString("SelectTranslator.yandex_key"),
             "text" -> text,
-            "lang" -> lang
+            "lang" -> translation.lang
         ) > as.String)
 
         Future {
             d onComplete {
                 case Success(result) =>
-                    translation complete {
+                    translated complete {
                         try
                             Success((JParser parseFromString result).get get "text" get 0 asString)
                         catch {
@@ -53,6 +61,7 @@ case class Translation(lang: String) extends Preference{
                     e.printStackTrace()
             }
         }
-        translation.future
+        translated.future
     }
+
 }

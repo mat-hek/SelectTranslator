@@ -1,10 +1,12 @@
 package selectTranslator
 
+import dispatch.Http
+
 
 /**
   * Created by MatHek on 12.05.2016.
   */
-object TranslationInitializer {
+object TranslationEnvInitializer {
 
     def apply() {
         val hm = HotkeyManager()
